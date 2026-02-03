@@ -10,7 +10,7 @@ env/
 
 # Data and Artifacts
 # financial_documents/ <--- Commented out to allow upload to GitHub for Deployment
-faiss_financial_index/
+# faiss_financial_index/ <--- Commented out to allow upload to GitHub as requested
 .DS_Store
 
 # IDEs
