@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Data and Artifacts
+financial_documents/
+faiss_financial_index/
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment Variables
+.env
