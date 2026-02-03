@@ -14,7 +14,9 @@ We need to make sure your financial documents are uploaded so the cloud app can 
     git push
     ```
 
-> **Note on `faiss_financial_index`**: We do *not* upload this folder. The app will automatically rebuild it on the cloud server the first time it runs. This ensures the index is compatible with the cloud's Linux environment (yours is Windows).
+> **Note on `faiss_financial_index`**: You have uploaded this folder, so the app will try to load it first.
+> *   If it works: Great! Startup will be fast.
+> *   If it fails (due to Windows vs Linux compatibility): The app will automatically rebuild the index from your documents. This is handled by the code.
 
 ## 2. Deploy on Streamlit Cloud
 
