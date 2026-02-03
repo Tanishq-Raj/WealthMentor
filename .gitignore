@@ -9,7 +9,7 @@ venv/
 env/
 
 # Data and Artifacts
-financial_documents/
+# financial_documents/ <--- Commented out to allow upload to GitHub for Deployment
 faiss_financial_index/
 .DS_Store
 
