@@ -69,7 +69,7 @@ RAG/
 
 ---
 
-## 🎯 Project Vision & Deep Dive
+## 🎯 Project Vision & Detailed Breakdown
 
 ### What is this project doing?
 This project acts as an **autonomous AI Financial Analyst**. It doesn't just "chat"; it reads, synthesizes, and analyzes thousands of pages of dense financial documents (annual reports, letters, books) to produce high-quality equity research reports comparable to those from junior analysts at top firms.
@@ -82,30 +82,55 @@ The purpose is to **democratize institutional-grade financial insight**. Traditi
 *   **Generic AI Limits**: Asking standard ChatGPT "Analyze Apple" gives generic, outdated, or hallucinated info because it doesn't have *your* specific documents or the latest reports you just downloaded.
 *   **Context Window**: You can't paste 50 PDF books into a standard chat window.
 
-### 🚀 Why This is Better Than ChatGPT?
-1.  **Grounded Truth (No Hallucinations)**: Unlike standard AI, this system uses **RAG**. It *must* find the answer in your documents first. If it says "Revenue grew 5%," it cites the specific page in the PDF.
-2.  **Specialized Knowledge Base**: You control the "brain." By feeding it specific books (e.g., *The Intelligent Investor*) and letters, you force the AI to analyze stocks through the lens of value investing masters, not just generic internet opinion.
-3.  **Audit Trail**: Every claim is backed by a source. You can verify the data, which is critical in finance.
-4.  **Privacy**: Your documents stay on your machine until specific relevant snippets are processed. You aren't uploading your entire hard drive to the cloud.
+### 🛠️ Tech Stack & Tools Used
+The project leverages a modern AI stack specializing in natural language processing and document retrieval:
 
-### ⚙️ How it Works (The Architecture)
+| Component | Tool/Library | Purpose |
+| :--- | :--- | :--- |
+| **User Interface** | Streamlit | Provides the web-based dashboard for entering API keys, uploading/indexing files, and viewing reports. |
+| **Orchestration** | LangChain | The "glue" that connects the document loaders, the vector store, and the LLM into a single pipeline. |
+| **Vector Database** | FAISS | A high-performance library for searching through millions of document snippets in milliseconds. |
+| **PDF Processing** | PyPDF | Extracts raw text from dense, multi-page financial PDFs. |
+| **Embedding Model** | HuggingFace (`all-MiniLM-L6-v2`) | Converts text into 384-dimensional vectors that represent the meaning of the words. |
+| **LLM (The Brain)** | Google Gemini (1.5 Pro/Flash) | The state-of-the-art model that reads the retrieved context and writes the final report. |
 
-Here is exactly what happens when you run the application:
+### 🧠 Machine Learning Models
+The project uses two distinct types of ML models:
 
-#### A. Document Loading (The "Eyes")
-*   **What it does:** The script scans your `financial_documents` folder for text (`.txt`) and PDF (`.pdf`) files.
-*   **Tech:** It uses `pypdf` to extract text from dense financial reports and `LangChain` loaders to process them.
+*   **Embedding Model (`sentence-transformers/all-MiniLM-L6-v2`)**:
+    *   **Function**: This is an encoder model. It doesn't generate text; instead, it turns sentences into lists of numbers (vectors).
+    *   **Why it's used**: It allows the system to perform "semantic search." If you search for "profitability," the model knows that "net income" and "margins" are related concepts, even if the exact word isn't used.
+*   **Large Language Model (Google Gemini)**:
+    *   **Gemini 1.5 Flash**: Used for high-speed, cost-effective generation.
+    *   **Gemini 1.5 Pro**: Used for deep reasoning and complex financial analysis (better for longer reports).
+    *   **Role**: It acts as the "writer," following a 300-word system prompt that instructs it to ignore generic AI "fluff" and stick to hard financial data.
 
-#### B. The "Brain" (Vector Database)
-*   **The Problem:** Computers don't "understand" text directly.
-*   **The Solution:** It uses a model called `sentence-transformers/all-MiniLM-L6-v2`. This turns sentences into long lists of numbers (vectors). Similar concepts (e.g., "Revenue increased" and "Sales went up") get similar numbers.
-*   **Storage (FAISS):** These numbers are saved into a specific folder called `faiss_financial_index`. This is **FAISS** (Facebook AI Similarity Search), an incredibly fast engine that acts as the project's long-term memory.
+### ⚙️ Entire Working Process
+The application operates in four main phases:
 
-#### C. The "Analyst" (Google Gemini)
-*   **Connection:** The app connects to Google's servers using your API Key.
-*   **Model:** It uses `gemini-1.5-flash` (fast) or `gemini-1.5-pro` (smart).
-*   **The Prompt:** The system uses a highly specific prompt that strictly instructs the AI to act as an expert analyst, prioritize internal documents, and separate "Context" findings from "General Knowledge."
+#### Phase A: Document Ingestion (The "Learning" Phase)
+1.  The app scans the `financial_documents/` folders.
+2.  **Chunking**: It breaks long documents (like a 200-page PDF) into smaller pieces of 1,500 characters each (with a 250-character overlap to preserve context).
+3.  **Vectorization**: Each chunk is passed through the Embedding Model to create a vector.
+4.  **Indexing**: These vectors are saved into the `faiss_financial_index` folder on your local drive.
 
-#### D. The Interface (Streamlit)
-*   **Controls:** Manages API keys, model selection, and user queries.
-*   **Caching:** Uses `@st.cache_resource` to ensure the heavy AI models don't reload every time you click a button, making the app feel snappy.
+#### Phase B: Retrieval (The "Research" Phase)
+1.  When you enter a company name (e.g., "Apple Inc."), the app generates a specialized retrieval query.
+2.  It converts this query into a vector and asks FAISS: "Find me the 7 most relevant snippets from my library regarding this query."
+3.  The system pulls these 7 chunks (the "Context").
+
+#### Phase C: Augmented Generation (The "Writing" Phase)
+1.  **Prompt Construction**: The app builds a massive prompt containing:
+    *   The 7 retrieved document snippets (Grounded Truth).
+    *   A structured template (8 sections: Moat, Financials, Management, etc.).
+    *   Strict logic instructions: "Use the provided context first; if info is missing, use your general knowledge but label it clearly."
+2.  **LLM Processing**: Gemini reads the prompt and synthesizes the final report.
+
+#### Phase D: Output
+1.  The report is rendered in Markdown format, allowing for bold headers, tables, and bullet points.
+2.  The report includes **citations** (e.g., "Source: 2023_Annual_Report.pdf | Page: 42"), making the AI's claims verifiable and "hallucination-resistant."
+
+### 🌟 Unique Highlights
+*   **Hybrid Knowledge**: Unlike ChatGPT, which only knows what it was trained on, this tool combines General AI knowledge with **Your Private Documents**.
+*   **Audit Trail**: Every financial claim can be traced back to a specific page in a specific document.
+*   **Local Processing**: The heavy lifting of document indexing happens on your machine, ensuring your library stays private.
